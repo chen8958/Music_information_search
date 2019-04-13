@@ -19,7 +19,7 @@ import numpy as np # np.log10()
 
 #%%
 import utils # self-defined utils.py file
-DB   = 'GTZAN'
+DB   = 'GiantSteps'
 if DB=='GTZAN': # dataset with genre label classify at parent directory
 	FILES = glob(DB+'/wav/*/*.wav')
 else:
@@ -37,14 +37,17 @@ else:
 chromagram = list()
 gens       = list()
 for f in FILES:
-	content = utils.read_keyfile(f)
+	if DB=='GTZAN':
+		content = utils.read_keyfile_gtzan(f)
+	else:
+		content = utils.read_keyfile(f)
 	if (not content): continue # skip saving if key not found
 	if DB=='GTZAN':
 		gen = f.split('\\')[1]
 		label[gen].append(utils.LABEL[int(content)])
 		gens.append(gen)
 	else:
-		label[gen].append(utils.LABEL[content])
+		label.append(content)
 
 	sr, y = utils.read_wav(f)
 	##########
@@ -72,9 +75,9 @@ for f in FILES:
 	"""
 	if DB=='GTZAN':
 		pred[gen].append(utils.LABEL[key_co.index(max(key_co))])
-"""
+
 	else:
-		pred.append('?') # you may ignore this when starting with GTZAN dataset
+		pred.append(utils.LABEL[key_co.index(max(key_co))]) # you may ignore this when starting with GTZAN dataset
 	##########
 """
 print("***** Q1 *****")
@@ -97,8 +100,7 @@ else:
 ##########
 # TODO: Calculate the accuracy for all file.
 # Hint1: Use label_list and pred_list.
-acc_all = utils.same()
+acc_all = utils.same(label,pred)/len(label);
 ##########
 print("----------")
 print("Overall accuracy:\t{:.2f}%".format(acc_all))
-"""

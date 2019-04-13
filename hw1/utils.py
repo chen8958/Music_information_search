@@ -60,7 +60,8 @@ def read_wav(f):
 		y = y.mean(axis=1)
 	return (sr,y)
 
-def read_keyfile(f): return open(f.replace('/wav','/key').replace('.wav','.lerch.txt'),'r').read().strip()
+def read_keyfile_gtzan(f): return open(f.replace('/wav','/key').replace('.wav','.lerch.txt'),'r').read().strip()
+def read_keyfile(f): return open(f.replace('/wav','/key').replace('.wav','.txt'),'r').read().strip()
 def parse_key(ar):
 	"""Parse key name of BPS-FH dataset.
 	"""
