@@ -4,6 +4,13 @@
 from scipy.io import wavfile as wav
 import numpy as np
 from pretty_midi import key_number_to_key_name
+from mir_eval.key import weighted_score
+
+def wsame(ls1,ls2):
+	count = 0;
+	for i in range(len(ls1)):
+		count = count + weighted_score(ls1[i],ls2[i])
+	return count
 
 def same(ls1,ls2):
 	count = 0;
@@ -31,7 +38,7 @@ KEY  = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B']
 LABEL = [k+" major" if i<12 else k+" minor" for i,k in enumerate(rotate(KEY,3)*2)]
 LABEL_str = dict(zip(LABEL,list(range(len(LABEL)))))
 
-DATA_SPLIT= {'BPS-FH': {'train':[1, 3, 5, 11, 16, 19, 20, 22, 25, 26, 32],
+DATA_SPLIT= {'BPS_piano': {'train':[1, 3, 5, 11, 16, 19, 20, 22, 25, 26, 32],
 						'valid':[6, 13, 14, 21, 23, 31],
 						'test' :[8, 12, 18, 24, 27, 28]},
 			 'A-MAPS': {'train':'abcdefghijkl',
@@ -62,6 +69,7 @@ def read_wav(f):
 
 def read_keyfile_gtzan(f): return open(f.replace('/wav','/key').replace('.wav','.lerch.txt'),'r').read().strip()
 def read_keyfile(f): return open(f.replace('/wav','/key').replace('.wav','.txt'),'r').read().strip()
+def read_keyfile_bps(f): return open(f.replace('\\','\\REF_key_').replace('.wav','.txt'),'r').read().strip()
 def parse_key(ar):
 	"""Parse key name of BPS-FH dataset.
 	"""

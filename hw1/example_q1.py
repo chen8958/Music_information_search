@@ -13,13 +13,14 @@ from collections import defaultdict
 # "#" in front of each line.
 from librosa.feature import chroma_stft, chroma_cqt, chroma_cens
 from scipy.stats import pearsonr
-# from mir_eval.key import weighted_score
-# from sklearn.metrics import accuracy_score
+from mir_eval.key import weighted_score
+from sklearn.metrics import accuracy_score
 import numpy as np # np.log10()
 
 #%%
 import utils # self-defined utils.py file
 DB   = 'GiantSteps'
+#DB   = 'GTZAN'
 if DB=='GTZAN': # dataset with genre label classify at parent directory
 	FILES = glob(DB+'/wav/*/*.wav')
 else:
@@ -36,6 +37,7 @@ else:
 	label, pred = list(), list()
 chromagram = list()
 gens       = list()
+print("start to process\n");
 for f in FILES:
 	if DB=='GTZAN':
 		content = utils.read_keyfile_gtzan(f)
@@ -56,14 +58,30 @@ for f in FILES:
 	cxx = chroma_stft(y=y, sr=sr);
 	#chromagram.append(cxx); # store into list for further use
 	# summing up all the chroma features into chroma vector
-
+	"""
+	gama=100
+	cxx = np.log10(1+gama*cxx);
+	"""
 	chroma_vector = cxx.sum(axis = 1);
+	#log scale
+	"""
+	gama=10
+	chroma_vector = np.log10(1+gama*chroma_vector);
+	"""
+
 	key_co = list()
-	## 	major detection
+	'''
+	## 	pitch detection binary
 	for i in range(0,11):
 		key_co.append(pearsonr(chroma_vector,utils.rotate(utils.MODE["major"],i-3))[0]);
 	for i in range(12,23):
 		key_co.append(pearsonr(chroma_vector,utils.rotate(utils.MODE["minor"],i-15))[0]);
+	'''
+	## 	pitch detection K-S
+	for i in range(0,11):
+		key_co.append(pearsonr(chroma_vector,utils.rotate(utils.KS["major"],i-3))[0]);
+	for i in range(12,23):
+		key_co.append(pearsonr(chroma_vector,utils.rotate(utils.KS["minor"],i-15))[0]);
 	"""
 	# finding the maximal value in the chroma vector and considering the note
 	# name corresponding to the maximal value as the tonic pitch
@@ -79,7 +97,7 @@ for f in FILES:
 	else:
 		pred.append(utils.LABEL[key_co.index(max(key_co))]) # you may ignore this when starting with GTZAN dataset
 	##########
-"""
+
 print("***** Q1 *****")
 if DB=='GTZAN':
 	label_list, pred_list = list(), list()
@@ -88,19 +106,29 @@ if DB=='GTZAN':
 		##########
 		# TODO: Calculate the accuracy for each genre
 		# Hint: Use label[g] and pred[g]
-		acc = utils.same(label[g],pred[g])/len(label[g]);
+		#weight score
+		acc = utils.wsame(label[g],pred[g])/len(label[g]);
+
+		#acc = utils.same(label[g],pred[g])/len(label[g]);
+
+		#acc = accuracy_score(label[g],pred[g]);
 		##########
-		print("{:9s}\t{:8.2f}%".format(g,acc))
+		print("{:9s}\t{:8.2f}%".format(g,acc*100))
 		label_list += label[g]
 		pred_list  += pred[g]
 else:
 	label_list = label
 	pred_list  = pred
-"""
+
 ##########
 # TODO: Calculate the accuracy for all file.
 # Hint1: Use label_list and pred_list.
-acc_all = utils.same(label,pred)/len(label);
+#weight score
+acc_all = utils.wsame(label_list,pred_list)/len(label_list);
+
+#acc_all = utils.same(label,pred)/len(label);
+
+#acc_all = accuracy_score(label,pred);
 ##########
 print("----------")
-print("Overall accuracy:\t{:.2f}%".format(acc_all))
+print("Overall accuracy:\t{:.2f}%".format(acc_all*100))
