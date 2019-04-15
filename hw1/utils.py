@@ -6,6 +6,7 @@ import numpy as np
 from pretty_midi import key_number_to_key_name
 from mir_eval.key import weighted_score
 
+
 def wsame(ls1,ls2):
 	count = 0;
 	for i in range(len(ls1)):
